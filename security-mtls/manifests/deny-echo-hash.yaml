@@ -1,0 +1,13 @@
+apiVersion: "security.istio.io/v1beta1"
+kind: "AuthorizationPolicy"
+metadata:
+  name: "deny-echo-hash"
+spec:
+  selector:
+    matchLabels:
+      app: echo
+  action: DENY
+  rules:
+    - from:
+      - source:
+          principals: ["cluster.local/ns/sm-mtls2/sa/echo-hash"]

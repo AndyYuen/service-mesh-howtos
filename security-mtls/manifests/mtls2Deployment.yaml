@@ -1,0 +1,137 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: echo-hash
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: echo-asterisk
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: echo-hash
+  labels:
+    app: echo-hash
+    service: echo-hash 
+spec:
+  ports:
+  - name: echo-hash
+    port: 2000
+  selector:
+    app: echo-hash
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: echo-asterisk
+  labels:
+    app: echo-asterisk
+    service: echo-asterisk 
+spec:
+  ports:
+  - name: echo-asterisk
+    port: 2000
+  selector:
+    app: echo-asterisk
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: echo-hash
+    version: v1
+  name: echo-hash
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: echo-hash
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: echo-hash
+        version: v1
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      serviceAccountName: echo-hash
+      containers:
+      - env:
+        - name: JAVA_OPTIONS
+          value: -Xms15m -Xmx15m -Xmn15m
+        name: echo-hash
+        image: quay.io/andyyuen/easyecho:latest
+        imagePullPolicy: IfNotPresent
+        command:
+          - nc
+        args:
+          - '-p'
+          - '2000'
+          - '-lke'
+          - '/echo-hash.sh'
+        ports:
+        - containerPort: 2000
+          name: echo-hash
+          protocol: TCP
+        resources:
+          requests: 
+            memory: "20Mi" 
+            cpu: "200m" # 1/5 core
+          limits:
+            memory: "40Mi"
+            cpu: "500m" 
+        securityContext:
+          privileged: false
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: echo-asterisk
+    version: v1
+  name: echo-asterisk
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: echo-asterisk
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: echo-asterisk
+        version: v1
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      serviceAccountName: echo-asterisk
+      containers:
+      - env:
+        - name: JAVA_OPTIONS
+          value: -Xms15m -Xmx15m -Xmn15m
+        name: echo-asterisk
+        image: quay.io/andyyuen/easyecho:latest
+        imagePullPolicy: IfNotPresent
+        command:
+          - nc
+        args:
+          - '-p'
+          - '2000'
+          - '-lke'
+          - '/echo-asterisk.sh'
+        ports:
+        - containerPort: 2000
+          name: echo-asterisk
+          protocol: TCP
+        resources:
+          requests: 
+            memory: "20Mi" 
+            cpu: "200m" # 1/5 core
+          limits:
+            memory: "40Mi"
+            cpu: "500m" 
+        securityContext:
+          privileged: false

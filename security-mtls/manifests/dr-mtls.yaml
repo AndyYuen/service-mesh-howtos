@@ -1,0 +1,9 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: dr-mtls
+spec:
+  host: "*"
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
