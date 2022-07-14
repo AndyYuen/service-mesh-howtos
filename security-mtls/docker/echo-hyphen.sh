@@ -1,4 +1,4 @@
 #! /bin/sh
 
-sed 's/ /-/g' | xargs -n10 echo "echo hyphen: "
+sed 's/ /-/g' | (echo -n "echo hyphen: " && cat)
 
