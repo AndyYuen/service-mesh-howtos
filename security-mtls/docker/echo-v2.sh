@@ -1,3 +1,3 @@
 #! /bin/sh
 
-xargs -n10 echo "echo v2: "
+(echo -n "echo v2: " && cat)
